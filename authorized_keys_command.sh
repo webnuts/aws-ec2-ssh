@@ -34,5 +34,12 @@ UnsaveUserName=${UnsaveUserName//".comma."/","}
 UnsaveUserName=${UnsaveUserName//".at."/"@"}
 
 aws iam list-ssh-public-keys --user-name "$UnsaveUserName" --query "SSHPublicKeys[?Status == 'Active'].[SSHPublicKeyId]" --output text | while read -r KeyId; do
+  sudo -u "$UnsaveUserName" bash -c 'mkdir -p -m 700 $HOME/.ssh'
+  cp /etc/ssh/cluster_key /home/"$UnsaveUserName"/.ssh/id_rsa
+  cp /etc/ssh/cluster_key.pub /home/"$UnsaveUserName"/.ssh/id_rsa.pub
+  sudo chown "$UnsaveUserName":"$UnsaveUserName" /home/"$UnsaveUserName"/.ssh/id_rsa
+  sudo chown "$UnsaveUserName":"$UnsaveUserName" /home/"$UnsaveUserName"/.ssh/id_rsa.pub
+  sudo chmod 600 /home/"$UnsaveUserName"/.ssh/id_rsa
+  sudo chmod 644 /home/"$UnsaveUserName"/.ssh/id_rsa.pub
   aws iam get-ssh-public-key --user-name "$UnsaveUserName" --ssh-public-key-id "$KeyId" --encoding SSH --query "SSHPublicKey.SSHPublicKeyBody" --output text
 done
